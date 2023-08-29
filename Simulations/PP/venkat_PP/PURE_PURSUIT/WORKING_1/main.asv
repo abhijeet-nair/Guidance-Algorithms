@@ -1,0 +1,47 @@
+close all; clear;
+global dt;
+global Vt Vp Alpha_p Alpha_t
+
+STATES = [];
+
+init
+
+Vp = Vp_0;
+Vt = Vt_0;
+
+Alpha_t = 0*pi/180;
+Vxt_0 = Vt*cos(Alpha_t);
+Vyt_0 = Vt*sin(Alpha_t);
+Vxp_0 = Vp*cos(Alpha_p);
+Vyp_0 = Vp*sin(Alpha_p);
+
+X = [Xt_0; Yt_0; Vxt_0; Vyt_0; Xp_0; Yp_0; Vxp_0; Vyp_0]; 
+
+R_prev = Inf;
+ 
+for t = t0:dt:tf
+
+    Alpha_p = atan(X(8)/X(7));
+        
+    theta = atan((X(2)-X(6))/(X(1)-X(5)));
+    R = sqrt((X(1)-X(5))^2+(X(2)-X(6))^2);
+    
+    if (R>R_prev)
+        break;
+    end
+    
+    [Vr, Vtheta, theta_dot] = navigation_pp(t, R, theta, Vt, Vp, Alpha_p, Alpha_t);
+    a_lat = guidance_pp(t, Vp, theta, Alpha_p, theta_dot);
+
+    STATES = [STATES; t, R, a_lat, X'];
+    
+    X = rrkk(X, a_lat);
+    R_prev = R;
+end
+
+figure(1), plot(STATES(:,4), STATES(:,5)), grid on; hold on;
+figure(1), plot(STATES(:,8), STATES(:,9)), grid on; hold on;
+
+figure(2), plot(STATES(:,1), STATES(:,2)), grid on; hold on;
+
+figure(3), plot(STATES(:,1), STATES(:,3)), grid on; hold on;

@@ -1,0 +1,4 @@
+function [a_lat] = guidance_pp(t, Vp, theta_dot)
+    a_lat = K*;
+end
+
